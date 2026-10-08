@@ -1,0 +1,56 @@
+{
+  "project": "Vidar Stealer Threat Intelligence Analysis",
+  "week": 4,
+  "frameworks": [ "Lockheed Martin Cyber Kill Chain", "MITRE ATT&CK Enterprise" ],
+  "kill_chain_mapping": [
+    {
+      "stage_id": 1,
+      "stage_name": "Reconnaissance",
+      "vidar_behavior": "Target selection via SEO poisoning keywords, software crack searches, and malvertising lures.",
+      "mitre_tactic": "Reconnaissance",
+      "mitre_ttps": [ "T1595", "T1593" ]
+    },
+    {
+      "stage_id": 2,
+      "stage_name": "Weaponization",
+      "vidar_behavior": "Compiling C++ payload, WinGo crypter packing, embedding into ISO/ZIP archives or ClickFix PowerShell lures.",
+      "mitre_tactic": "Resource Development",
+      "mitre_ttps": [ "T1587.001", "T1027" ]
+    },
+    {
+      "stage_id": 3,
+      "stage_name": "Delivery",
+      "vidar_behavior": "Distribution via Malvertising Factory campaign and fake Win11 Photoshop cracks.",
+      "mitre_tactic": "Initial Access",
+      "mitre_ttps": [ "T1566.002", "T1189" ]
+    },
+    {
+      "stage_id": 4,
+      "stage_name": "Exploitation",
+      "vidar_behavior": "User executes fake software or runs copy-pasted PowerShell code from fake update popups.",
+      "mitre_tactic": "Execution",
+      "mitre_ttps": [ "T1059.001", "T1204.002" ]
+    },
+    {
+      "stage_id": 5,
+      "stage_name": "Installation",
+      "vidar_behavior": "Dropping binary into %TEMP% directory and loading required DLLs (freebl3.dll, sqlite3.dll).",
+      "mitre_tactic": "Defense Evasion",
+      "mitre_ttps": [ "T1547.001", "T1036" ]
+    },
+    {
+      "stage_id": 6,
+      "stage_name": "Command and Control",
+      "vidar_behavior": "Dynamic C2 discovery via Telegram/Steam Dead Drop Resolvers and HTTP POST communication.",
+      "mitre_tactic": "Command and Control",
+      "mitre_ttps": [ "T1102.001", "T1071.001" ]
+    },
+    {
+      "stage_id": 7,
+      "stage_name": "Actions on Objectives",
+      "vidar_behavior": "Extraction of browser credentials, SQLite cookies, crypto wallets, and C2 exfiltration.",
+      "mitre_tactic": "Credential Access",
+      "mitre_ttps": [ "T1555.003", "T1082", "T1041" ]
+    }
+  ]
+}
