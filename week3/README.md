@@ -94,6 +94,14 @@ Based on our compiled dataset `vidar_iocs_normalized.csv`, a quantitative and qu
 
 ![Vidar Stealer IoC Distribution](ioc_distribution.png)
 
+**Confidence Level Analytics**
+To assess the reliability of the collected threat intelligence, indicators were evaluated based on their source credibility and validation status:
+- **High Confidence (145 indicators / ~85%)**: Verified indicators sourced from primary analytical pipelines and high-reputation threat intel feeds.
+- **Medium Confidence (16 indicators / ~9%)**: Indicators requiring secondary correlation or derived from heuristic observations.
+- **Low Confidence (9 indicators / ~5%)**: Lower-priority or auxiliary indicators maintained for historical correlation and contextual coverage.
+
+![Vidar Stealer Condience Level](confidence_distribution.png)
+
 ### Role Analytics (Most Common Occurrences)
 The overwhelming majority of indicators (**115**) act as **Payload Hashes**, representing the actual stealer executable files. The second most common are **C2 IPs (11)** — the addresses of the command and control servers the virus communicates with. We also identified **7 Dead Drop addresses** (legitimate platforms like Telegram used to mask communications).
 
