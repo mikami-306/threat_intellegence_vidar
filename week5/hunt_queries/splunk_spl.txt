@@ -1,0 +1,20 @@
+# Splunk SPL equivalents (index=sysmon, Sysmon add-on field names)
+
+# H1 - suspicious PowerShell
+index=sysmon EventCode=1 Image="*\\powershell.exe"
+  (CommandLine="*-enc*" OR CommandLine="*-encodedcommand*" OR CommandLine="* hidden*" OR CommandLine="*iex*" OR CommandLine="*irm*" OR CommandLine="*DownloadString*")
+  NOT ParentImage="*\\ccmexec.exe"
+| table _time host User ParentImage CommandLine
+
+# H2 - exec from Temp/AppData started by PowerShell
+index=sysmon EventCode=1 ParentImage="*\\powershell.exe" (Image="*\\AppData\\*" OR Image="*\\Temp\\*")
+| table _time host User Image ParentImage CommandLine
+
+# H3 - Dead Drop Resolver DNS from non-browser
+index=sysmon EventCode=22 (QueryName="*t.me" OR QueryName="*telegram.me" OR QueryName="*steamcommunity.com")
+  NOT (Image="*\\chrome.exe" OR Image="*\\msedge.exe" OR Image="*\\firefox.exe" OR Image="*\\Steam.exe" OR Image="*\\Telegram.exe")
+| stats count min(_time) as first max(_time) as last by host Image QueryName
+
+# H4 - IOC match (intel-driven)
+index=sysmon (SHA256="e93511363f7781c4c7ff3ed0698db6c4634092fe7e93ca96d666509a9412e73e" OR DestinationIp="31.59.44.104")
+| table _time host Image DestinationIp SHA256
