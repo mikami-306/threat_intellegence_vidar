@@ -1,0 +1,30 @@
+title: Vidar Stealer Execution via Suspicious Temp Directory
+id: a7f893e2-1234-4567-89ab-cdef01234567
+status: experimental
+description: Detects Vidar Stealer binary execution from user Temp or AppData directories commonly dropped via cracked software or ClickFix PowerShell lures.
+references:
+    - https://unit42.paloaltonetworks.com/
+author: Milana , Aisha
+date: 2026-10-08
+tags:
+    - attack.execution
+    - attack.t1204.002
+    - attack.credential_access
+    - attack.t1555
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|contains:
+            - '\AppData\Local\Temp\'
+            - '\AppData\Roaming\'
+        Image|endswith:
+            - '.exe'
+    filter_legit:
+        Image|contains:
+            - '\AppData\Local\Programs\'
+    condition: selection and not filter_legit
+falsepositives:
+    - Legitimate portable applications or installers executed from Temp directories.
+level: high
