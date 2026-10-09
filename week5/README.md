@@ -1,4 +1,4 @@
-# Week 5 Report: Threat Hunting Concept — Hypothesis-Driven & Intel-Driven Hunting
+﻿# Week 5 Report: Threat Hunting Concept вЂ” Hypothesis-Driven & Intel-Driven Hunting
 
 **Project:** Detection Engineering and Threat Intelligence Analysis of Vidar Stealer
 **Assignment 3 (Week 5):** Build a hypothesis-driven hunting scenario and execute hunt queries in ELK/Splunk.
@@ -54,7 +54,7 @@ Reproduce locally: `python3 generate_logs.py && python3 run_hunt.py`
 
 ![hunt results](hunt_results.png)
 
-**Reconstructed timeline on WS-04 (user madina):** encoded hidden PowerShell from explorer.exe -> `iex (irm ...)` -> `lf3t32pa.exe` from `%TEMP%` -> DNS `telegram.me` and `steamcommunity.com` -> connection to `31.59.44.104:80` (low-confidence candidate, watchlist only) and to `195.201.250.209:443` (high-confidence C2 from dataset) -> self-delete via `cmd /c del`. This matches Kill Chain stages 4-7 from Week 4.
+**Reconstructed timeline on WS-04 (user user03):** encoded hidden PowerShell from explorer.exe -> `iex (irm ...)` -> `lf3t32pa.exe` from `%TEMP%` -> DNS `telegram.me` and `steamcommunity.com` -> connection to `31.59.44.104:80` (low-confidence candidate, watchlist only) and to `195.201.250.209:443` (high-confidence C2 from dataset) -> self-delete via `cmd /c del`. This matches Kill Chain stages 4-7 from Week 4.
 
 **Kibana screenshots (add real ones):** `screenshots/kibana_h1.png`, `kibana_h3.png`, `kibana_timeline.png`
 

