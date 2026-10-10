@@ -62,6 +62,7 @@ Hypothesis 4
 <img width="1280" height="690" alt="image" src="https://github.com/user-attachments/assets/d9fbce5d-6928-456d-a3ca-98abc18c6b2c" />
 
 ### Telemetry Artifact Example (Kibana Discover Snippet)
+<img width="1280" height="692" alt="image" src="https://github.com/user-attachments/assets/10f03293-1870-41da-8f95-5b1df5cfd45e" />
 A fragment of the raw Sysmon logs (event.code: 1) captured on host WS-04, illustrating typical baseline user and system activity:
 
 * Example of Standard PowerShell Usage:
@@ -74,7 +75,7 @@ A fragment of the raw Sysmon logs (event.code: 1) captured on host WS-04, illust
   * Process: cmd.exe /c ipconfig /all (Parent Process: explorer.exe)
 
 *Analysis of these records confirms proper telemetry ingestion within the sysmon-sim index, demonstrating how baseline noise can be distinguished from malicious execution chains during threat hunting.*
-<img width="1280" height="692" alt="image" src="https://github.com/user-attachments/assets/10f03293-1870-41da-8f95-5b1df5cfd45e" />
+
 
 ## 7. Tuning & False Positives
 - Naive hunt "any PowerShell start": **509** events. With attack-pattern filter: **3**. After excluding the SCCM client (`ccmexec.exe`, legitimate admin encoded command): **2**.
