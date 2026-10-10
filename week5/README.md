@@ -43,8 +43,6 @@ not process.parent.name : "ccmexec.exe"
 ```
 
 ## 6. Results
-Reproduce locally: `python3 generate_logs.py && python3 run_hunt.py`
-
 | Hunt | Hits | Host |
 |---|---|---|
 | H1 PowerShell abuse | 2 | WS-04 |
