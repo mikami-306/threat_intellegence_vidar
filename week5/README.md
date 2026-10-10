@@ -78,12 +78,6 @@ A fragment of the raw Sysmon logs (event.code: 1) captured on host WS-04, illust
 *Analysis of these records confirms proper telemetry ingestion within the sysmon-sim index, demonstrating how baseline noise can be distinguished from malicious execution chains during threat hunting.*
 <img width="1280" height="692" alt="image" src="https://github.com/user-attachments/assets/10f03293-1870-41da-8f95-5b1df5cfd45e" />
 
-
-
-**Reconstructed timeline on WS-04 (user user03):** encoded hidden PowerShell from explorer.exe -> `iex (irm ...)` -> `lf3t32pa.exe` from `%TEMP%` -> DNS `telegram.me` and `steamcommunity.com` -> connection to `31.59.44.104:80` (low-confidence candidate, watchlist only) and to `195.201.250.209:443` (high-confidence C2 from dataset) -> self-delete via `cmd /c del`. This matches Kill Chain stages 4-7 from Week 4.
-
-**Kibana screenshots (add real ones):** `screenshots/kibana_h1.png`, `kibana_h3.png`, `kibana_timeline.png`
-
 ## 7. Tuning & False Positives
 - Naive hunt "any PowerShell start": **509** events. With attack-pattern filter: **3**. After excluding the SCCM client (`ccmexec.exe`, legitimate admin encoded command): **2**.
 - H3: browsers, Steam and Telegram clients legitimately resolve these domains, so they are excluded by process name; remaining risk is attackers renaming the process.
@@ -91,5 +85,5 @@ A fragment of the raw Sysmon logs (event.code: 1) captured on host WS-04, illust
 - `31.59.44.104` (our Week 2 Shodan finding) is `c2_candidate`, confidence low, `to_ids = False` in the dataset, so it is a watchlist item, not an alert. Two Cloudflare IPs are also `to_ids = False`.
 - Limitation: hunts depend on Sysmon EID 1/3/22 coverage and PowerShell Script Block Logging (EID 4104) would improve H1.
 
-## 9. Conclusion
-Combining both models gives coverage: intel-driven finds known samples quickly but breaks when hashes change daily (repacked WinGo/Krypt), while behavior-based hypotheses (H1-H3) still catch new variants.
+## 8. Conclusion
+Combining both models gives coverage: intel-driven finds known samples quickly but breaks when hashes change daily (repacked WinGo/Krypt), while behavior-based hypotheses still catch new variants.
