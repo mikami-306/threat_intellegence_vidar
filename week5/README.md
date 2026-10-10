@@ -1,4 +1,4 @@
-﻿# Week 5 Report: Threat Hunting Concept вЂ” Hypothesis-Driven & Intel-Driven Hunting
+﻿# Week 5 Report: Threat Hunting Concept - Hypothesis-Driven & Intel-Driven Hunting
 
 **Project:** Detection Engineering and Threat Intelligence Analysis of Vidar Stealer
 **Assignment 3 (Week 5):** Build a hypothesis-driven hunting scenario and execute hunt queries in ELK/Splunk.
@@ -48,9 +48,9 @@ Reproduce locally: `python3 generate_logs.py && python3 run_hunt.py`
 | Hunt | Hits | Host |
 |---|---|---|
 | H1 PowerShell abuse | 2 | WS-04 |
-| H2 Exec from Temp/AppData via PowerShell | 1 | WS-04 |
+| H2 Exec from Temp/AppData via PowerShell | 0 | WS-04 |
 | H3 DDR lookup from non-browser | 2 | WS-04 |
-| H4 IOC match (intel-driven, dataset) | 3 | WS-04 |
+| H4 IOC match (intel-driven, dataset) | 2 | WS-04 |
 
 ![hunt results](hunt_results.png)
 
@@ -64,9 +64,6 @@ Reproduce locally: `python3 generate_logs.py && python3 run_hunt.py`
 - H4 domain IOCs: the dataset contains a URL on `github.com` (fake Adobe installer). Using the host as a domain IOC produced **155** false positives on legitimate DNS, so shared platforms (`github.com`, Telegram, Steam, Mastodon instances) are excluded from domain matching and only the full URL is a valid IOC. Result: 3 true hits.
 - `31.59.44.104` (our Week 2 Shodan finding) is `c2_candidate`, confidence low, `to_ids = False` in the dataset, so it is a watchlist item, not an alert. Two Cloudflare IPs are also `to_ids = False`.
 - Limitation: hunts depend on Sysmon EID 1/3/22 coverage and PowerShell Script Block Logging (EID 4104) would improve H1.
-
-## 8. From Hunt to Detection
-H1/H2 logic can be added to the Week 3 Sigma rule (`week3/vidar_execution.yml`); H3 becomes a new Sigma rule for DNS queries by non-browser processes. IOCs from H4 are already structured for MISP (`misp_type`, `to_ids`) from Week 3.
 
 ## 9. Conclusion
 Combining both models gives coverage: intel-driven finds known samples quickly but breaks when hashes change daily (repacked WinGo/Krypt), while behavior-based hypotheses (H1-H3) still catch new variants.
