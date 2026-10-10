@@ -52,7 +52,33 @@ Reproduce locally: `python3 generate_logs.py && python3 run_hunt.py`
 | H3 DDR lookup from non-browser | 2 | WS-04 |
 | H4 IOC match (intel-driven, dataset) | 2 | WS-04 |
 
-![hunt results](hunt_results.png)
+![hunt results]<img width="1200" height="600" alt="hunt_results (1)" src="https://github.com/user-attachments/assets/27c12ba2-e078-4564-b5f0-5a7a54281718" />
+
+Hypothesis 1
+<img width="1280" height="689" alt="photo_5352961012983865796_y (1)" src="https://github.com/user-attachments/assets/5ab2dc5a-cdb3-44ab-83df-e4f0570cf896" />
+Hypothesis 2
+<img width="1280" height="692" alt="image" src="https://github.com/user-attachments/assets/0e71a302-db7d-4155-afcb-ea5b16f4197e" />
+Hypothesis 3
+<img width="1280" height="690" alt="image" src="https://github.com/user-attachments/assets/9cd4123d-bd24-4e70-a43a-ddefa9b49c55" />
+Hypothesis 4
+<img width="1280" height="690" alt="image" src="https://github.com/user-attachments/assets/d9fbce5d-6928-456d-a3ca-98abc18c6b2c" />
+
+### Telemetry Artifact Example (Kibana Discover Snippet)
+A fragment of the raw Sysmon logs (event.code: 1) captured on host WS-04, illustrating typical baseline user and system activity:
+
+* Example of Standard PowerShell Usage:
+  * Timestamp: Oct 5, 2026 @ 20:25:41
+  * Host: WS-04 | User: madina
+  * Process: powershell.exe Get-Process (Parent Process: cmd.exe)
+* Example of Network Utility Execution:
+  * Timestamp: Oct 5, 2026 @ 20:24:39
+  * Host: WS-04 | User: aigerim
+  * Process: cmd.exe /c ipconfig /all (Parent Process: explorer.exe)
+
+*Analysis of these records confirms proper telemetry ingestion within the sysmon-sim index, demonstrating how baseline noise can be distinguished from malicious execution chains during threat hunting.*
+<img width="1280" height="692" alt="image" src="https://github.com/user-attachments/assets/10f03293-1870-41da-8f95-5b1df5cfd45e" />
+
+
 
 **Reconstructed timeline on WS-04 (user user03):** encoded hidden PowerShell from explorer.exe -> `iex (irm ...)` -> `lf3t32pa.exe` from `%TEMP%` -> DNS `telegram.me` and `steamcommunity.com` -> connection to `31.59.44.104:80` (low-confidence candidate, watchlist only) and to `195.201.250.209:443` (high-confidence C2 from dataset) -> self-delete via `cmd /c del`. This matches Kill Chain stages 4-7 from Week 4.
 
