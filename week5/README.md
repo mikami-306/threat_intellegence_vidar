@@ -80,7 +80,7 @@ A fragment of the raw Sysmon logs (event.code: 1) captured on host WS-04, illust
 ## 7. Tuning & False Positives
 - Naive hunt "any PowerShell start": **509** events. With attack-pattern filter: **3**. After excluding the SCCM client (`ccmexec.exe`, legitimate admin encoded command): **2**.
 - H3: browsers, Steam and Telegram clients legitimately resolve these domains, so they are excluded by process name; remaining risk is attackers renaming the process.
-- H4 domain IOCs: the dataset contains a URL on `github.com` (fake Adobe installer). Using the host as a domain IOC produced **155** false positives on legitimate DNS, so shared platforms (`github.com`, Telegram, Steam, Mastodon instances) are excluded from domain matching and only the full URL is a valid IOC. Result: 3 true hits.
+- H4 domain IOCs: the dataset contains a URL on `github.com` (fake Adobe installer). Using the host as a domain IOC produced **155** false positives on legitimate DNS, so shared platforms (`github.com`, Telegram, Steam, Mastodon instances) are excluded from domain matching and only the full URL is a valid IOC. Result: 2 true hits.
 - `31.59.44.104` (our Week 2 Shodan finding) is `c2_candidate`, confidence low, `to_ids = False` in the dataset, so it is a watchlist item, not an alert. Two Cloudflare IPs are also `to_ids = False`.
 - Limitation: hunts depend on Sysmon EID 1/3/22 coverage and PowerShell Script Block Logging (EID 4104) would improve H1.
 
