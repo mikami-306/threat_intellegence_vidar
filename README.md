@@ -37,6 +37,12 @@ This repository documents an end-to-end intelligence workflow: harvesting and cl
 * Compared linear Kill Chain defense models against matrix-based MITRE telemetry tracking.
 * Compiled machine-readable mappings (`week4/kill_chain_mapping.json`).
 
+### Phase 5: Threat Hunting & Detection Engineering (Week 5)
+* Deployed a local Docker-based ELK Stack (Elasticsearch and Kibana) for simulated telemetry analysis.
+* Automated data ingestion and IoC parsing using repository pipelines (`load_to_elk.py`, `ioc_loader.py`, `generate_logs.py`).
+* Formulated and tested hunting hypotheses (H1–H4) leveraging Windows Sysmon Event ID 1 (Process Creation) and network telemetry.
+* Tuned queries to eliminate noise from legitimate background utilities (such as SCCM `ccmexec.exe`) and shared platforms (GitHub, Telegram).
+
 ---
 
 ## Data Normalization Pipeline
@@ -56,9 +62,11 @@ To handle messy open-source intelligence feeds, a custom python parser (`week3/p
 
 ## AI Assistant Disclosure
 
-AI tools were used strictly as a development assistant during this project:
+Google Gemini tool weas used strictly as a development assistant during this project:
 * **Python & Regex:** Assisting with Pandas dataframe transformations and regular expression syntax for hash validation.
 * **Sigma Validation:** Checking YAML schema compliance and tuning selection filters for `%TEMP%` execution and registry persistence.
 * **Framework Cross-Checking:** Reviewing alignment between Kill Chain phases and MITRE sub-techniques.
-
+* **Query & Filter Syntax:** Assisting with Kibana Query Language (KQL) syntax adjustments and refining process-filtering logic to eliminate noise from legitimate background utilities (such as SCCM ccmexec.exe).
+* **Data Structuring & Scripts:** Reviewing Python data ingestion pipelines (load_to_elk.py, ioc_loader.py) and formatting hypothesis validation metrics into CSV and visualization outputs.
+* **Documentation & Framework Alignment:** Structuring technical documentation snippets for the repository README.md and cross-referencing hunting metrics with MITRE ATT&CK kill-chain steps
 ---
