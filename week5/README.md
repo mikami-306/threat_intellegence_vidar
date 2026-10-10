@@ -52,7 +52,7 @@ Reproduce locally: `python3 generate_logs.py && python3 run_hunt.py`
 | H3 DDR lookup from non-browser | 2 | WS-04 |
 | H4 IOC match (intel-driven, dataset) | 2 | WS-04 |
 
-![hunt results]<img width="1200" height="600" alt="hunt_results (1)" src="https://github.com/user-attachments/assets/27c12ba2-e078-4564-b5f0-5a7a54281718" />
+<img width="1200" height="600" alt="hunt_results (1)" src="https://github.com/user-attachments/assets/27c12ba2-e078-4564-b5f0-5a7a54281718" />
 
 Hypothesis 1
 <img width="1280" height="689" alt="photo_5352961012983865796_y (1)" src="https://github.com/user-attachments/assets/5ab2dc5a-cdb3-44ab-83df-e4f0570cf896" />
