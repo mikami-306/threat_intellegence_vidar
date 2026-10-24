@@ -1,43 +1,5 @@
 # Threat Intelligence & Emulation: Vidar Stealer
 
-**Course:** Introduction to Threat Hunting (ITH)
-**Group topic:** Vidar Infostealer — threat intelligence, detection engineering, and adversary emulation
-**Lab environment:** `WS-04` (Windows endpoint) + ELK stack with Sysmon telemetry
-
----
-
-## What this repository is
-
-This repo tracks our group's weekly work applying the course's Threat Hunting / Cyber Threat Intelligence concepts to a single real-world case study: **Vidar**, an information-stealing malware family sold as malware-as-a-service. Each week builds on the last — from basic CTI research, through data collection and the Cyber Kill Chain, to building actual detections and, finally, an adversary emulation plan that ties everything together.
-
-Everything here is for **academic, defensive purposes only**. No live Vidar sample, no real malware, and no real credentials are used anywhere in this repo. All "attack" behavior is simulated with benign scripts so detection logic can be built and reasoned about safely.
-
-## Repository structure
-
-```
-threat_intellegence_vidar/
-├── README.md                      <- you are here
-├── week1-7/                       <- earlier weekly deliverables (CTI, kill chain, ATT&CK, CAR)
-└── week8/
-    ├── week8_adversary_emulation_plan.md   <- main Week 8 report
-    ├── scripts/                            <- benign PowerShell emulation scripts
-    │   ├── step1_initial_access.ps1
-    │   ├── step2_persistence.ps1
-    │   ├── step3_collection.ps1
-    │   ├── step4_exfiltration.ps1
-    │   └── cleanup.ps1
-    ├── server/
-    │   └── exfil_server.py                 <- local lab-only "C2" simulator
-    └── detections/
-        └── sigma_encoded_powershell.yml    <- Sigma rules for each emulated stage
-```
-
-(Adjust the `week1-7/` path above to match however your earlier weekly folders are actually named.)
-
-## About Vidar
-
-Vidar is an infostealer, derived from the Arkei malware family, that has been sold on underground forums since 2018. It targets browser-stored passwords, cookies, autofill data, cryptocurrency wallets, and local files. It is typically delivered via malvertising, cracked-software installers, phishing, or fake CAPTCHA/"ClickFix" pages, and is known for resolving its command-and-control (C2) address from legitimate public profiles (e.g. Telegram, Steam) before uploading stolen data over HTTP(S).
-
 ## Week 8 — Adversary Emulation Plan
 
 Week 8 extends the single detection rule built in Week 7 (`CAR-2013-07-001`, which catches hidden/encoded PowerShell execution on `WS-04`) into a complete, five-stage emulation plan covering the Vidar infection chain:
