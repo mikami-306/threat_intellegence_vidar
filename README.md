@@ -1,82 +1,88 @@
-# Detection Engineering and Threat Intelligence Analysis of Vidar Stealer
+# Threat Intelligence & Emulation: Vidar Stealer
 
-**Authors:** Amangeldina Milana , Imatayeva Aisha 
-**Context:** 3rd Year Cyber Security Students (Astana, Kazakhstan)  
-**Instructor:** Tendikov Noyan
-
----
-
-## Overview
-A hands-on threat intelligence and detection engineering project tracking Vidar Stealer, an active Malware-as-the-Service (MaaS) infostealer. While legacy stealers like RedLine took a major hit during Operation Magnus, Vidar continues to evolve, heavily relying on SEO poisoning, malvertising networks, fake software cracks, and FDC-ClickFix social engineering scripts.
-
-This repository documents an end-to-end intelligence workflow: harvesting and cleaning raw IoCs, structuring data for MISP ingestion, mapping behavior to the Lockheed Martin Cyber Kill Chain and MITRE ATT&CK, writing production-grade Sigma detection rules, and implementing behavioral analytics via MITRE CAR.
+**Course:** Introduction to Threat Hunting (ITH)
+**Group topic:** Vidar Infostealer — threat intelligence, detection engineering, and adversary emulation
+**Lab environment:** `WS-04` (Windows endpoint) + ELK stack with Sysmon telemetry
 
 ---
 
-## Project Phases
+## What this repository is
 
-### Phase 1: Threat Intelligence & Foundations (Week 1)
-- Defined CTI taxonomy across strategic, tactical, and technical levels.
-- Developed a glossary covering core concepts: MaaS, SEO Poisoning, Dead Drop Resolvers, and In-Memory Injection.
-- Analyzed initial vector trends (cracked installers, rogue YouTube tutorials).
+This repo tracks our group's weekly work applying the course's Threat Hunting / Cyber Threat Intelligence concepts to a single real-world case study: **Vidar**, an information-stealing malware family sold as malware-as-a-service. Each week builds on the last — from basic CTI research, through data collection and the Cyber Kill Chain, to building actual detections and, finally, an adversary emulation plan that ties everything together.
 
-### Phase 2: Infrastructure & Collection (Week 2)
-- Gathered raw indicators from MalwareBazaar and VirusTotal.
-- Investigated C2 infrastructure using Shodan and mapped Dead Drop Resolvers (Telegram bios, Steam community profiles) used to mask active C2 IPs.
+Everything here is for **academic, defensive purposes only**. No live Vidar sample, no real malware, and no real credentials are used anywhere in this repo. All "attack" behavior is simulated with benign scripts so detection logic can be built and reasoned about safely.
 
-### Phase 3: Data Normalization & MISP Export (Week 3)
-- Wrote a custom Python cleaning script (`process_data.py`) to parse, deduplicate, and validate raw indicators.
-- Built the clean master dataset (`vidar_iocs_normalized.csv`) featuring 170 unique IoCs.
-- Generated EDA visualization charts (`ioc_distribution.png` for type breakdown and `confidence_distribution.png` for source confidence levels).
-- Added MISP taxonomy flags (`misp_type`, `misp_category`, `to_ids`).
+## Repository structure
 
-### Phase 4: Cyber Kill Chain & MITRE TTP Mapping (Week 4)
-- Performed a 7-stage Lockheed Martin Cyber Kill Chain analysis tailored to Vidar's execution flow.
-- Mapped phases to exact MITRE ATT&CK Enterprise TTPs (T1555.003, T1059.001, T1102.001, T1082, T1189).
-- Compared linear Kill Chain defense models against matrix-based MITRE telemetry tracking.
-- Compiled machine-readable mappings (`week4/kill_chain_mapping.json`).
+```
+threat_intellegence_vidar/
+├── README.md                      <- you are here
+├── week1-7/                       <- earlier weekly deliverables (CTI, kill chain, ATT&CK, CAR)
+└── week8/
+    ├── week8_adversary_emulation_plan.md   <- main Week 8 report
+    ├── scripts/                            <- benign PowerShell emulation scripts
+    │   ├── step1_initial_access.ps1
+    │   ├── step2_persistence.ps1
+    │   ├── step3_collection.ps1
+    │   ├── step4_exfiltration.ps1
+    │   └── cleanup.ps1
+    ├── server/
+    │   └── exfil_server.py                 <- local lab-only "C2" simulator
+    └── detections/
+        └── sigma_encoded_powershell.yml    <- Sigma rules for each emulated stage
+```
 
-### Phase 5: Threat Hunting & Detection Engineering (Week 5)
-- Deployed a local Docker-based ELK Stack (Elasticsearch and Kibana) for simulated telemetry analysis.
-- Automated data ingestion and IoC parsing using repository pipelines (`load_to_elk.py`, `ioc_loader.py`, `generate_logs.py`).
-- Formulated and tested hunting hypotheses (H1–H4) leveraging Windows Sysmon Event ID 1 (Process Creation) and network telemetry on simulated host `WS-04`.
-- Tuned queries to eliminate noise from legitimate background utilities (such as SCCM `ccmexec.exe`) and shared platforms (GitHub, Telegram).
+(Adjust the `week1-7/` path above to match however your earlier weekly folders are actually named.)
 
-### Phase 6: MITRE ATT&CK Framework Mapping & TTP Deep-Dive (Week 6)
-- Structured the complete Vidar infection chain into standardized Tactics, Techniques, and Procedures (TTPs).
-- Conducted a deep-dive analysis into technique **T1059.001** (Command and Scripting Interpreter: PowerShell) and obfuscation flag abuse (**T1027**).
-- Mapped Dead Drop Resolvers (DDR) and C2 traffic to **T1102** and **T1041**.
-- Formatted attack path parameters for interactive rendering in the MITRE ATT&CK Navigator.
+## About Vidar
 
-### Phase 7: MITRE CAR Analytics & SIEM Detection Logic (Week 7)
-- Evaluated behavioral analytics from the **MITRE Cyber Analytics Repository (CAR)**.
-- Selected **CAR-2013-07-001** (Suspicious Command-Line Arguments) to target obfuscated PowerShell execution patterns.
-- Implemented production KQL detection logic targeting Sysmon Event ID 1 telemetry.
-- Differentiated abstract analytic models from operational SIEM detections tuned for noise reduction.
+Vidar is an infostealer, derived from the Arkei malware family, that has been sold on underground forums since 2018. It targets browser-stored passwords, cookies, autofill data, cryptocurrency wallets, and local files. It is typically delivered via malvertising, cracked-software installers, phishing, or fake CAPTCHA/"ClickFix" pages, and is known for resolving its command-and-control (C2) address from legitimate public profiles (e.g. Telegram, Steam) before uploading stolen data over HTTP(S).
 
----
+## Week 8 — Adversary Emulation Plan
 
-## Data Normalization Pipeline
-To handle messy open-source intelligence feeds, a custom python parser (`week3/process_data.py`) standardizes the dataset:
-1. **Regex Validation:** Validates SHA256/MD5 hashes and IPv4 structures.
-2. **Sanitization:** Converts domains to lowercase, strips whitespaces, and removes defanged strings (`hxxp`, `[.]`).
-3. **MISP Taxonomies:** Assigns operational categories (Payload delivery, Network activity) with `to_ids=True`.
+Week 8 extends the single detection rule built in Week 7 (`CAR-2013-07-001`, which catches hidden/encoded PowerShell execution on `WS-04`) into a complete, five-stage emulation plan covering the Vidar infection chain:
 
----
+| Stage | ATT&CK Technique(s) | Purpose |
+|---|---|---|
+| Initial Access / Execution | T1566.001, T1204.002, T1059.001 | Simulated phishing-triggered encoded PowerShell execution |
+| Defense Evasion | T1027 | Obfuscated/encoded command, caught by the same rule |
+| Persistence *(optional, loader-based)* | T1053.005, T1547.001 | Simulated scheduled task / Run key, representing a loader often dropped with Vidar |
+| Collection | T1555.003, T1539, T1005 | Canary "browser credential" and "wallet" files, archived |
+| C2 / Exfiltration | T1102.001, T1041, T1070.004 | Dead-drop-style C2 lookup, HTTP upload to a local lab server, self-cleanup |
 
-## Dataset Breakdown (`vidar_iocs_normalized.csv`)
-- **Total Records:** 170 validated IoCs
-- **Hashes:** 120 (SHA256, MD5, IMPHASH)
-- **Network Indicators:** 49 (URLs, IPs, Domains)
-- **Attribution:** Unit42 Malvertising Factory, ClickFix campaigns, Polymorphic C2 infrastructure.
+Full details, detection queries (ELK/KQL), and the results table are in [`week8/week8_adversary_emulation_plan.md`](week8/week8_adversary_emulation_plan.md).
 
----
+### Why "optional" persistence?
 
-## AI Assistant Disclosure
-Google Gemini was used strictly as a development assistant during this project:
-- **Python & Regex:** Assisting with Pandas dataframe transformations and regular expression syntax for hash validation.
-- **Sigma Validation:** Checking YAML schema compliance and tuning selection filters for `%TEMP%` execution and registry persistence.
-- **Framework Cross-Checking:** Reviewing alignment between Kill Chain phases, MITRE sub-techniques, and MITRE CAR analytic definitions.
-- **Query & Filter Syntax:** Assisting with Kibana Query Language (KQL) syntax adjustments and refining process-filtering logic to eliminate noise from legitimate background utilities (such as SCCM `ccmexec.exe`).
-- **Data Structuring & Scripts:** Reviewing Python data ingestion pipelines (`load_to_elk.py`, `ioc_loader.py`) and formatting hypothesis validation metrics into CSV and visualization outputs.
-- **Documentation & Framework Alignment:** Structuring technical documentation snippets for the repository `README.md`, Week 6 TTP tables, and Week 7 CAR analytic implementations.
+Vidar itself is primarily a smash-and-grab stealer and does not typically establish its own persistence. The persistence stage is included because the assignment requires an Initial Access → Persistence → Exfiltration structure, and because loaders frequently delivered alongside Vidar do persist. This is called out explicitly rather than overstated.
+
+### Safety notes
+
+- All scripts are benign: no real malware is downloaded, executed, or stored in this repo.
+- `step3_collection.ps1` only creates **canary files** with placeholder content — it never touches a real browser profile or real credentials.
+- `step4_exfiltration.ps1` and `server/exfil_server.py` only talk to each other inside an isolated lab network — no real internet C2 is contacted.
+- Everything is intended to run only on a disposable lab VM (`WS-04`), ideally from a reverted snapshot.
+
+## How to read this repo
+
+1. Start with `week8/week8_adversary_emulation_plan.md` for the narrative report and the detection logic.
+2. Look at `week8/scripts/` to see how each ATT&CK technique is modeled in a safe, reversible way.
+3. Look at `week8/detections/sigma_encoded_powershell.yml` for the Sigma-format version of each ELK query, mapped one rule per stage.
+4. The results table in the report (filled in after lab runs) shows what telemetry and alerts were actually observed on `WS-04`.
+
+## Next steps
+
+Week 9 will replace the manual PowerShell emulation with equivalent **Atomic Red Team** tests for the same ATT&CK techniques, run against the same `WS-04` host, to compare results against this week's hand-built emulation.
+
+## Group members
+
+_<add names here>_
+
+## References
+
+- MITRE ATT&CK: https://attack.mitre.org
+- MITRE CAR: https://car.mitre.org
+- MITRE CALDERA documentation
+- Atomic Red Team: https://github.com/redcanaryco/atomic-red-team
+- Kyle Wilhoit, *Operationalizing Threat Intelligence*, 2022
+- Chad Maurice, *The Foundations of Threat Hunting*, 2022
