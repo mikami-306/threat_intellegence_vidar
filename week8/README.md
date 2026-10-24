@@ -1,10 +1,5 @@
 # Week 8 – Creating a Plan to Emulate an Attacker's Action
 
-**Group topic:** Threat Intelligence – Vidar Stealer
-**Repository:** https://github.com/mikami-306/threat_intellegence_vidar
-**Host used:** `WS-04` (same simulation host as Week 7)
-**Stack:** ELK + Sysmon
-
 ---
 
 ## 1. Overview
