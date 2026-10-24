@@ -1,50 +1,100 @@
-# Threat Intelligence & Emulation: Vidar Stealer
+# Week 8 – Creating a Plan to Emulate an Attacker's Action
 
-## Week 8 — Adversary Emulation Plan
+**Group topic:** Threat Intelligence – Vidar Stealer
+**Repository:** https://github.com/mikami-306/threat_intellegence_vidar
+**Host used:** `WS-04` (same simulation host as Week 7)
+**Stack:** ELK + Sysmon
 
-Week 8 extends the single detection rule built in Week 7 (`CAR-2013-07-001`, which catches hidden/encoded PowerShell execution on `WS-04`) into a complete, five-stage emulation plan covering the Vidar infection chain:
+---
 
-| Stage | ATT&CK Technique(s) | Purpose |
-|---|---|---|
-| Initial Access / Execution | T1566.001, T1204.002, T1059.001 | Simulated phishing-triggered encoded PowerShell execution |
-| Defense Evasion | T1027 | Obfuscated/encoded command, caught by the same rule |
-| Persistence *(optional, loader-based)* | T1053.005, T1547.001 | Simulated scheduled task / Run key, representing a loader often dropped with Vidar |
-| Collection | T1555.003, T1539, T1005 | Canary "browser credential" and "wallet" files, archived |
-| C2 / Exfiltration | T1102.001, T1041, T1070.004 | Dead-drop-style C2 lookup, HTTP upload to a local lab server, self-cleanup |
+## 1. Overview
 
-Full details, detection queries (ELK/KQL), and the results table are in [`week8/week8_adversary_emulation_plan.md`](week8/week8_adversary_emulation_plan.md).
+Week 7 implemented a single MITRE CAR analytic (`CAR-2013-07-001`) that detects hidden/encoded PowerShell execution on `WS-04`, mapped to T1059.001 and T1027 and tied to Vidar Stealer's command-line evasion behavior.
 
-### Why "optional" persistence?
+Week 8 extends that single detection into a **full adversary emulation plan**: a chain of four stages — Initial Access → Execution → Persistence (optional) → Collection → Exfiltration — built around the actual Vidar infection chain, so the Week 7 analytic can be tested as part of a realistic attack path instead of in isolation. All stages are emulated on `WS-04` with benign scripts (no live Vidar sample), and each stage is mapped to an ATT&CK technique and a detection query in the same ELK/Sysmon format used last week.
 
-Vidar itself is primarily a smash-and-grab stealer and does not typically establish its own persistence. The persistence stage is included because the assignment requires an Initial Access → Persistence → Exfiltration structure, and because loaders frequently delivered alongside Vidar do persist. This is called out explicitly rather than overstated.
+## 2. Emulation plan: stage → technique → detection
 
-### Safety notes
+| # | Stage | ATT&CK Technique | What is emulated on WS-04 | Detection query (ELK/Sysmon) |
+|---|---|---|---|---|
+| 1 | Initial Access / Execution | T1566.001 Phishing Attachment, T1204.002 User Execution, **T1059.001** PowerShell | A test file launches `powershell.exe` with `-enc`, exactly the pattern Week 7's CAR analytic was built to catch | Re-use `CAR-2013-07-001` query from Week 7 |
+| 2 | Defense Evasion | **T1027** Obfuscated Files or Information | The encoded command from Stage 1 decodes to a benign payload (writes a marker file) | Same `CAR-2013-07-001` query (`-enc` clause) + decode check in Sysmon EID 1 |
+| 3 | Persistence (optional, loader-based) | T1053.005 Scheduled Task, T1547.001 Run Key | Benign scheduled task / Run key pointing to `notepad.exe`, representing a loader dropped alongside Vidar | New query below (3a) |
+| 4 | Collection | T1555.003 Credentials from Web Browsers, T1539 Steal Web Session Cookie, T1005 Data from Local System | Canary "Login Data" / "Cookies" / "wallet.dat" files created and zipped on WS-04 (no real browser data touched) | New query below (3b) |
+| 5 | C2 / Exfiltration | T1102.001 Dead Drop Resolver, T1041 Exfiltration Over C2 Channel, T1070.004 File Deletion | `powershell.exe` fetches a C2 address from a lab-only "dead drop" text file, POSTs the zip to a local test server, then deletes local artifacts | New query below (3c) |
 
-- All scripts are benign: no real malware is downloaded, executed, or stored in this repo.
-- `step3_collection.ps1` only creates **canary files** with placeholder content — it never touches a real browser profile or real credentials.
-- `step4_exfiltration.ps1` and `server/exfil_server.py` only talk to each other inside an isolated lab network — no real internet C2 is contacted.
-- Everything is intended to run only on a disposable lab VM (`WS-04`), ideally from a reverted snapshot.
+## 3. New detection logic for Week 8 (ELK/Sysmon, same format as Week 7)
 
-## How to read this repo
+### 3a. Persistence — scheduled task / Run key on WS-04
 
-1. Start with `week8/week8_adversary_emulation_plan.md` for the narrative report and the detection logic.
-2. Look at `week8/scripts/` to see how each ATT&CK technique is modeled in a safe, reversible way.
-3. Look at `week8/detections/sigma_encoded_powershell.yml` for the Sigma-format version of each ELK query, mapped one rule per stage.
-4. The results table in the report (filled in after lab runs) shows what telemetry and alerts were actually observed on `WS-04`.
+```
+// ELK KQL - persistence stage, loader-based, mapped to T1053.005 / T1547.001
+event.code: "1"
+  and (process.name: "schtasks.exe" and process.command_line: "*/create*")
+  and host.name: "WS-04"
 
-## Next steps
+// Run key variant (Sysmon EID 13 - registry value set)
+event.code: "13"
+  and registry.path: "*CurrentVersion\\Run*"
+  and host.name: "WS-04"
+```
 
-Week 9 will replace the manual PowerShell emulation with equivalent **Atomic Red Team** tests for the same ATT&CK techniques, run against the same `WS-04` host, to compare results against this week's hand-built emulation.
+### 3b. Collection — non-browser process touching credential-store-style paths
 
-## Group members
+```
+// ELK KQL - collection stage, mapped to T1555.003 / T1539 / T1005
+event.code: "11"
+  and file.path: ("*\\User Data\\Default\\Login Data*" or "*\\User Data\\Default\\Cookies*")
+  and not process.name: ("chrome.exe" or "msedge.exe" or "firefox.exe")
+  and host.name: "WS-04"
 
-_<add names here>_
+// Archive step (Sysmon EID 1) - packaging loot before exfil
+event.code: "1"
+  and process.name: "powershell.exe"
+  and process.command_line: "*Compress-Archive*"
+  and host.name: "WS-04"
+```
 
-## References
+### 3c. Exfiltration — dead-drop lookup and outbound POST
 
-- MITRE ATT&CK: https://attack.mitre.org
-- MITRE CAR: https://car.mitre.org
-- MITRE CALDERA documentation
-- Atomic Red Team: https://github.com/redcanaryco/atomic-red-team
-- Kyle Wilhoit, *Operationalizing Threat Intelligence*, 2022
-- Chad Maurice, *The Foundations of Threat Hunting*, 2022
+```
+// ELK KQL - exfiltration stage, mapped to T1102.001 / T1041
+event.code: "3"
+  and process.name: "powershell.exe"
+  and destination.port: 80
+  and host.name: "WS-04"
+
+// Companion check - file deletion right after the network event (T1070.004)
+event.code: "23" or event.code: "26"
+  and host.name: "WS-04"
+```
+
+This gives WS-04 a single correlated kill chain instead of one isolated rule: Stage-1/2 fire first (`CAR-2013-07-001`), optionally Stage-3, then Stage-4, then Stage-5 within a short time window. Correlating all four alerts on the same host/process lineage is a much stronger signal than any one rule alone — this is the main takeaway for the defense.
+
+## 4. Emulation scripts (committed under `week8/scripts/`)
+
+All stages above are implemented as benign PowerShell scripts, run only on the isolated `WS-04` VM:
+
+- `scripts/step1_initial_access.ps1` – encoded PowerShell execution (feeds CAR-2013-07-001)
+- `scripts/step2_persistence.ps1` – scheduled task + Run key (optional/loader-based)
+- `scripts/step3_collection.ps1` – canary browser/wallet files + zip
+- `scripts/step4_exfiltration.ps1` – dead-drop lookup + POST to lab server + cleanup
+- `scripts/cleanup.ps1` – reverts all artifacts
+- `server/exfil_server.py` – local Python server simulating the dead drop + upload endpoint
+- `detections/sigma_encoded_powershell.yml` – Sigma versions of the Week 7 + Week 8 queries above
+
+None of these scripts contact the real internet or touch real credentials; `server/exfil_server.py` only listens on the isolated lab network.
+
+## 5. Results table (fill in after running on WS-04)
+
+| Stage | Technique | Executed on WS-04? | Sysmon event seen? | ELK query fired? | Notes / gaps |
+|---|---|---|---|---|---|
+| 1–2 | T1059.001 / T1027 | | | (CAR-2013-07-001) | |
+| 3 | T1053.005 / T1547.001 | | | | |
+| 4 | T1555.003 / T1005 | | | | |
+| 5 | T1102.001 / T1041 / T1070.004 | | | | |
+
+## 6. Honest scoping note
+
+Vidar itself is primarily a smash-and-grab stealer; it does not typically establish its own persistence. Stage 3 is kept in the plan because the assignment requires Initial Access → Persistence → Exfiltration, and because loaders delivered alongside Vidar frequently do persist — we label it "optional/loader-based" in the Navigator layer and in the defense.
+
