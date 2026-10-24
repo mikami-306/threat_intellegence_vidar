@@ -80,14 +80,14 @@ All stages above are implemented as benign PowerShell scripts, run only on the i
 
 None of these scripts contact the real internet or touch real credentials; `server/exfil_server.py` only listens on the isolated lab network.
 
-## 5. Results table (fill in after running on WS-04)
+## 5. Results table
 
 | Stage | Technique | Executed on WS-04? | Sysmon event seen? | ELK query fired? | Notes / gaps |
 |---|---|---|---|---|---|
-| 1–2 | T1059.001 / T1027 | | | (CAR-2013-07-001) | |
-| 3 | T1053.005 / T1547.001 | | | | |
-| 4 | T1555.003 / T1005 | | | | |
-| 5 | T1102.001 / T1041 / T1070.004 | | | | |
+| 1–2 | T1059.001 / T1027 | Yes — ran cleanly, encoded PowerShell executed, marker file written | Not yet checked | Not yet checked (CAR-2013-07-001) | Need to confirm in Kibana that EID 1 + the CAR query actually fired |
+| 3 | T1053.005 / T1547.001 | Partial — scheduled task creation failed (Access denied); Run key creation succeeded | Not yet checked | Not yet checked | PowerShell wasn't run as Administrator — `schtasks /create` needs elevated rights |
+| 4 | T1555.003 / T1005 | Yes — canary files created, zip archive built successfully | Not yet checked | Not yet checked | |
+| 5 | T1102.001 / T1041 / T1070.004 | Partial — dead-drop lookup failed (fallback used), upload timed out; local cleanup still ran | Not yet checked | Not yet checked | `exfil_server.py` wasn't reachable — likely not running yet on the Linux VM, or VMs aren't on the same network |
 
 ## 6. Honest scoping note
 
