@@ -1,0 +1,60 @@
+{
+  "name": "Vidar Stealer Infection Chain - WS-04",
+  "versions": {
+    "attack": "14",
+    "navigator": "4.8.0",
+    "layer": "4.4"
+  },
+  "domain": "enterprise-attack",
+  "description": "ATT&CK Navigator layer for Vidar Stealer campaign on WS-04",
+  "filters": {
+    "platforms": [
+      "Windows"
+    ]
+  },
+  "techniques": [
+    {
+      "techniqueID": "T1189",
+      "tactic": "initial-access",
+      "color": "#ff6666",
+      "comment": "Drive-by Compromise via fake win11install.com site",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1059.001",
+      "tactic": "execution",
+      "color": "#ff6666",
+      "comment": "Hidden PowerShell execution triggered by campaign",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1027",
+      "tactic": "defense-evasion",
+      "color": "#ff6666",
+      "comment": "Command-line obfuscation (-w hidden -enc)",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1102",
+      "tactic": "command-and-control",
+      "color": "#ff6666",
+      "comment": "Dead Drop Resolvers via Telegram/Steam profile bios",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1041",
+      "tactic": "exfiltration",
+      "color": "#ff6666",
+      "comment": "Exfiltration of stolen data to C2 server 195.201.250.209",
+      "enabled": true
+    }
+  ],
+  "gradient": {
+    "colors": [
+      "#ffffff",
+      "#ff6666"
+    ],
+    "minValue": 0,
+    "maxValue": 1
+  }
+}
