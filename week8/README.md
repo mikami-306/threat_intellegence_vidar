@@ -4,9 +4,7 @@
 
 ## 1. Overview
 
-Week 7 implemented a single MITRE CAR analytic (`CAR-2013-07-001`) that detects hidden/encoded PowerShell execution on `WS-04`, mapped to T1059.001 and T1027 and tied to Vidar Stealer's command-line evasion behavior.
-
-Week 8 extends that single detection into a **full adversary emulation plan**: a chain of four stages — Initial Access → Execution → Persistence (optional) → Collection → Exfiltration — built around the actual Vidar infection chain, so the Week 7 analytic can be tested as part of a realistic attack path instead of in isolation. All stages are emulated on `WS-04` with benign scripts (no live Vidar sample), and each stage is mapped to an ATT&CK technique and a detection query in the same ELK/Sysmon format used last week.
+Week 8 extends that single detection into a full adversary emulation plan: a chain of four stages — Initial Access → Execution → Persistence (optional) → Collection → Exfiltration — built around the actual Vidar infection chain, so the Week 7 analytic can be tested as part of a realistic attack path instead of in isolation. All stages are emulated on `WS-04` with benign scripts (no live Vidar sample), and each stage is mapped to an ATT&CK technique and a detection query in the same ELK/Sysmon format used last week.
 
 ## 2. Emulation plan: stage → technique → detection
 
@@ -82,14 +80,21 @@ None of these scripts contact the real internet or touch real credentials; `serv
 
 ## 5. Results table
 
-## Results table
-
 | Stage | Technique | Executed on WS-04? | Sysmon event seen? | ELK query fired? | Notes / gaps |
 |---|---|---|---|---|---|
 | 1–2 | T1059.001 / T1027 | Yes — ran cleanly, encoded PowerShell executed, marker file written | Verified against Elastic sample dataset  | Yes — CAR-2013-07-001 query logic returned matching results on sample data | Query syntax confirmed correct; live WS-04 telemetry pipeline was not fully available in this session |
 | 3 | T1053.005 / T1547.001 | Partial — scheduled task creation failed (Access denied); Run key creation succeeded | No matching events found in available data | No | `schtasks /create` needs elevated (Administrator) PowerShell session; registry-persistence telemetry not captured this run |
 | 4 | T1555.003 / T1005 | Yes — canary files created, zip archive built successfully | No matching events found in available data | No | File-creation telemetry not captured this run |
 | 5 | T1102.001 / T1041 / T1070.004 | Partial — dead-drop lookup failed (fallback used), upload timed out; local cleanup still ran | Comparable network-connection events present in sample data | Query logic confirmed valid | `exfil_server.py` unreachable (network/VM config); live exfil attempt not confirmed in telemetry |
+
+<img width="1280" height="692" alt="image" src="https://github.com/user-attachments/assets/901fec13-6483-4433-a40b-6969a45834e8" />
+<img width="1280" height="693" alt="image" src="https://github.com/user-attachments/assets/f0584a0d-ccf8-4154-a446-6d6542579202" />
+<img width="1280" height="689" alt="image" src="https://github.com/user-attachments/assets/1bb0c76a-0d9b-4fb4-a382-cfb2ddb7c29c" />
+<img width="1280" height="685" alt="image" src="https://github.com/user-attachments/assets/946c6603-f1f9-43bf-bb75-bcc88556833a" />
+
+
+
+
 
 
 
