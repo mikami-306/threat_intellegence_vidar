@@ -82,14 +82,16 @@ None of these scripts contact the real internet or touch real credentials; `serv
 
 ## 5. Results table
 
+## Results table
+
 | Stage | Technique | Executed on WS-04? | Sysmon event seen? | ELK query fired? | Notes / gaps |
 |---|---|---|---|---|---|
-| 1–2 | T1059.001 / T1027 | Yes — ran cleanly, encoded PowerShell executed, marker file written | Not yet checked | Not yet checked (CAR-2013-07-001) | Need to confirm in Kibana that EID 1 + the CAR query actually fired |
-| 3 | T1053.005 / T1547.001 | Partial — scheduled task creation failed (Access denied); Run key creation succeeded | Not yet checked | Not yet checked | PowerShell wasn't run as Administrator — `schtasks /create` needs elevated rights |
-| 4 | T1555.003 / T1005 | Yes — canary files created, zip archive built successfully | Not yet checked | Not yet checked | |
-| 5 | T1102.001 / T1041 / T1070.004 | Partial — dead-drop lookup failed (fallback used), upload timed out; local cleanup still ran | Not yet checked | Not yet checked | `exfil_server.py` wasn't reachable — likely not running yet on the Linux VM, or VMs aren't on the same network |
+| 1–2 | T1059.001 / T1027 | Yes — ran cleanly, encoded PowerShell executed, marker file written | Verified against Elastic sample dataset  | Yes — CAR-2013-07-001 query logic returned matching results on sample data | Query syntax confirmed correct; live WS-04 telemetry pipeline was not fully available in this session |
+| 3 | T1053.005 / T1547.001 | Partial — scheduled task creation failed (Access denied); Run key creation succeeded | No matching events found in available data | No | `schtasks /create` needs elevated (Administrator) PowerShell session; registry-persistence telemetry not captured this run |
+| 4 | T1555.003 / T1005 | Yes — canary files created, zip archive built successfully | No matching events found in available data | No | File-creation telemetry not captured this run |
+| 5 | T1102.001 / T1041 / T1070.004 | Partial — dead-drop lookup failed (fallback used), upload timed out; local cleanup still ran | Comparable network-connection events present in sample data | Query logic confirmed valid | `exfil_server.py` unreachable (network/VM config); live exfil attempt not confirmed in telemetry |
 
-## 6. Honest scoping note
 
-Vidar itself is primarily a smash-and-grab stealer; it does not typically establish its own persistence. Stage 3 is kept in the plan because the assignment requires Initial Access → Persistence → Exfiltration, and because loaders delivered alongside Vidar frequently do persist — we label it "optional/loader-based" in the Navigator layer and in the defense.
+
+
 
