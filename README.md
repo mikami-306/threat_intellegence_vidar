@@ -1,6 +1,6 @@
 # Vidar Stealer: End-to-End Threat Intelligence & Detection Engineering
 
-## 📑 Project & Authors Information
+## Project & Authors Information
 - **Authors:** Amangeldina Milana, Imatayeva Aisha
 - **Academic Status:** 3rd-year Undergraduate Students in Cybersecurity
 - **Course:** Introduction to Threat Hunting
