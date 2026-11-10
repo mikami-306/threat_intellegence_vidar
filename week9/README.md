@@ -78,7 +78,7 @@ event.code: "10" and host.name: "WS-04" and target_process.name: "lsass.exe"
 
 > **Analysis:** Analyzed process access events to verify whether target process interactions with credential handles were caught by Sysmon. Host-level telemetry verified process creation and invocation attempts associated with credential dumping techniques on **WS-04**.
 
-[alt text](image-4.png)
+![alt text](image-4.png)
 
 
 ---
