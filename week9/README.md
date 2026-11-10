@@ -23,6 +23,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force
 IEX (New-Object Net.WebClient).DownloadString('[https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1](https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1)')
 Install-AtomicRedTeam -Force
 Import-Module "C:\AtomicRedTeam\invoke-atomicredteam\Invoke-AtomicRedTeam.psd1" -Force
+```
 
 ![alt text](image.png)
 
