@@ -1,38 +1,92 @@
-# Detection Engineering and Threat Intelligence Analysis of Vidar Stealer
-### Course: Introduction to Threat Hunting
-### Instructor: Tendikov Noyan
-### Students: Imatayeva Aisha, Amangeldina Milana— 3rd year, Cyber Security
-Lab host: WS-04 | Stack: ELK (Elasticsearch/Kibana) + Sysmon
-### About the project
-This repo covers our group's work tracking Vidar Stealer, a Malware-as-a-Service infostealer that's been active since 2018. While older stealers like RedLine lost most of their infrastructure after Operation Magnus, Vidar is still very much active, relying on SEO poisoning, malvertising, fake cracked-software installers, and fake "ClickFix" CAPTCHA pages to get onto machines. That made it a reasonable target to track for the semester since there's a steady stream of current indicators and reporting on it.
-The project goes from raw threat intel collection, through data cleaning and MISP-style formatting, mapping Vidar's behavior to the Kill Chain and MITRE ATT&CK, building actual Sigma/KQL detections, and finishing with an adversary emulation plan that ties the detections together into a realistic attack chain.
-Workflow, roughly in order
-We started by building a profile of Vidar and a glossary of the key terms we kept running into (MaaS, SEO poisoning, dead drop resolvers, in-memory injection). From there we pulled raw IoCs from MalwareBazaar and VirusTotal, looked at C2 infrastructure with Shodan, and started noticing the dead-drop pattern - Vidar often pulls its real C2 address from a Telegram bio or Steam profile instead of hardcoding it, which makes blocklisting by IP alone pretty useless.
-After that we cleaned the data into a usable dataset, mapped the infection chain to both the Kill Chain and ATT&CK, built and tuned detections on WS-04, and in Week 8 put together a full emulation plan.
-### Week by week
-### Week 1 — CTI Fundamentals
-Built a glossary of core CTI terms and classified Vidar-related threats by type/source. Looked at strategic vs tactical vs technical intel levels and where Vidar fits.
-### Week 2 — Data Collection
-Pulled indicators from MalwareBazaar and VirusTotal, checked infrastructure with Shodan, mapped out dead drop resolver behavior (Telegram/Steam profiles used to hide live C2 IPs).
-### Week 3 — Data Processing
-Wrote a cleaning script to normalize the raw IoCs - validating hashes and IPs with regex, lowercasing domains, stripping defanged strings (`hxxp`, [.]`), and tagging everything with MISP-style fields (`misp_type, misp_category, `to_ids`). Output is a normalized CSV we use for the rest of the project.
-### Week 4 — Cyber Kill Chain
-Walked Vidar's infection flow through the 7 Lockheed Martin Kill Chain stages and mapped each stage to specific ATT&CK techniques (T1555.003, T1059.001, T1102.001, T1082, T1189). Compared the linear Kill Chain view against the matrix-style ATT&CK view for actually tracking telemetry.
-### Week 5 — Threat Hunting
-Set up a local ELK stack and started hunting on WS-04. Wrote a few hypotheses around suspicious PowerShell activity and tested them against simulated logs, then tuned the queries to cut out noise from normal background processes (things like SCCM's ccmexec.exe kept showing up as false positives early on).
-### Week 6 — ATT&CK Framework
-Went deeper into T1059.001 (PowerShell) and T1027 (obfuscation flags), and mapped the dead-drop/C2 traffic to T1102 and T1041. Laid out the full attack path so it could be viewed in ATT&CK Navigator.
-### Week 7 — MITRE CAR
-Picked CAR-2013-07-001 (suspicious command-line arguments) since it fit what we'd already been looking at in Week 6 - hidden window styles and encoded commands in PowerShell. Implemented it as a working KQL query against Sysmon Event ID 1 on WS-04, and talked through the difference between the abstract CAR analytic and the tuned, noise-reduced version we actually run.
-### Week 8 — Adversary Emulation Plan
-Took the Week 7 detection and built it into a full emulation plan covering the realistic Vidar chain: initial access (encoded PowerShell), persistence (optional - more representative of a loader than Vidar itself), collection (fake browser/wallet data), and exfiltration (dead-drop C2 lookup + upload). Each stage has a matching ATT&CK technique and detection query. Full writeup, scripts, and Sigma rules are in week8.
-Data pipeline
-The normalization script (`process_data.py`) handles the messy parts of raw OSINT feeds:
-- validates SHA256/MD5 hashes and IPv4 addresses with regex
-- lowercases domains, strips whitespace, removes defanged markers like hxxp and [.]
-- tags each record with MISP category fields and to_ids
-Output is vidar_iocs_normalized.csv - <fill in actual record count> validated indicators, split between hashes and network indicators (URLs/IPs/domains).
-AI assistance disclosure
-### We used AI (Claude) at a few points during this project, mainly as a coding and review assistant:
-- helping write/debug the Python cleaning scripts (regex for hash/IP validation, pandas transformations)
-- checking Sigma rule YAML syntax and tuning selection filters
+# Vidar Stealer: End-to-End Threat Intelligence & Detection Engineering
+
+## 📑 Project & Authors Information
+- **Authors:** Amangeldina Milana, Imatayeva Aisha
+- **Academic Status:** 3rd-year Undergraduate Students in Cybersecurity
+- **Course:** Introduction to Threat Hunting
+- **Course Instructor:** Tendikov Noyan
+
+---
+
+## Overview
+A hands-on threat intelligence and detection engineering project tracking Vidar Stealer, an active Malware-as-the-Service (MaaS) infostealer. While legacy stealers like RedLine took a major hit during Operation Magnus, Vidar continues to evolve, heavily relying on SEO poisoning, malvertising networks, fake software cracks, and FDC-ClickFix social engineering scripts.
+
+This repository documents an end-to-end intelligence workflow: harvesting and cleaning raw IoCs, structuring data for MISP ingestion, mapping behavior to the Lockheed Martin Cyber Kill Chain and MITRE ATT&CK, writing production-grade Sigma detection rules, implementing behavioral analytics via MITRE CAR, planning adversary emulation, and validating telemetry with Atomic Red Team.
+
+---
+
+## Project Phases
+
+### Phase 1: Threat Intelligence & Foundations (Week 1)
+- Defined CTI taxonomy across strategic, tactical, and technical levels.
+- Developed a glossary covering core concepts: MaaS, SEO Poisoning, Dead Drop Resolvers, and In-Memory Injection.
+- Analyzed initial vector trends (cracked installers, rogue YouTube tutorials).
+
+### Phase 2: Infrastructure & Collection (Week 2)
+- Gathered raw indicators from MalwareBazaar and VirusTotal.
+- Investigated C2 infrastructure using Shodan and mapped Dead Drop Resolvers (Telegram bios, Steam community profiles) used to mask active C2 IPs.
+
+### Phase 3: Data Normalization & MISP Export (Week 3)
+- Wrote a custom Python cleaning script (`process_data.py`) to parse, deduplicate, and validate raw indicators.
+- Built the clean master dataset (`vidar_iocs_normalized.csv`) featuring 170 unique IoCs.
+- Generated EDA visualization charts (`ioc_distribution.png` for type breakdown and `confidence_distribution.png` for source confidence levels).
+- Added MISP taxonomy flags (`misp_type`, `misp_category`, `to_ids`).
+
+### Phase 4: Cyber Kill Chain & MITRE TTP Mapping (Week 4)
+- Performed a 7-stage Lockheed Martin Cyber Kill Chain analysis tailored to Vidar's execution flow.
+- Mapped phases to exact MITRE ATT&CK Enterprise TTPs (`T1555.003`, `T1059.001`, `T1102.001`, `T1082`, `T1189`).
+- Compared linear Kill Chain defense models against matrix-based MITRE telemetry tracking.
+- Compiled machine-readable mappings (`week4/kill_chain_mapping.json`).
+
+### Phase 5: Threat Hunting & Detection Engineering (Week 5)
+- Deployed a local Docker-based ELK Stack (Elasticsearch and Kibana) for simulated telemetry analysis.
+- Automated data ingestion and IoC parsing using repository pipelines (`load_to_elk.py`, `ioc_loader.py`, `generate_logs.py`).
+- Formulated and tested hunting hypotheses (H1–H4) leveraging Windows Sysmon Event ID 1 (Process Creation) and network telemetry on simulated host `WS-04`.
+- Tuned queries to eliminate noise from legitimate background utilities (such as SCCM `ccmexec.exe`) and shared platforms (GitHub, Telegram).
+
+### Phase 6: MITRE ATT&CK Framework Mapping & TTP Deep-Dive (Week 6)
+- Structured the complete Vidar infection chain into standardized Tactics, Techniques, and Procedures (TTPs).
+- Conducted a deep-dive analysis into technique `T1059.001` (Command and Scripting Interpreter: PowerShell) and obfuscation flag abuse (`T1027`).
+- Mapped Dead Drop Resolvers (DDR) and C2 traffic to `T1102` and `T1041`.
+- Formatted attack path parameters for interactive rendering in the MITRE ATT&CK Navigator.
+
+### Phase 7: MITRE CAR Analytics & SIEM Detection Logic (Week 7)
+- Evaluated behavioral analytics from the MITRE Cyber Analytics Repository (CAR).
+- Selected CAR-2013-07-001 (Suspicious Command-Line Arguments) to target obfuscated PowerShell execution patterns.
+- Implemented production KQL detection logic targeting Sysmon Event ID 1 telemetry.
+- Differentiated abstract analytic models from operational SIEM detections tuned for noise reduction.
+
+### Phase 8: Adversary Emulation Plan & Kill Chain Orchestration (Week 8)
+- Designed a multi-stage adversary emulation plan mirroring the realistic Vidar infection chain on host `WS-04`.
+- Developed benign testing scripts under `week8/scripts/` covering Initial Access, Defense Evasion, Persistence, Collection, and Exfiltration.
+- Formulated complementary ELK KQL detection queries for persistence (scheduled tasks, Run keys via Sysmon EID 1/13), collection (canary file access, `Compress-Archive`), and exfiltration (network POST requests, file deletion tracking via EID 23/26).
+- Validated correlated multi-stage alert correlation over time windows rather than isolated rules.
+
+### Phase 9: Atomic Red Team Testing & SIEM Telemetry Validation (Week 9)
+- Installed and executed `Invoke-AtomicRedTeam` framework tests on target host `WS-04`.
+- Simulated adversary behavior for techniques **T1059.001** (PowerShell Execution) and **T1003** (OS Credential Dumping).
+- Verified telemetry ingestion in Kibana (`sysmon-sim` index), validating Sysmon Event ID 1 (Process Creation) and Event ID 10 (Process Access) logging.
+- Executed automated cleanup procedures (`-Cleanup`) to maintain endpoint hygiene post-testing.
+
+### Phase 10: APT29 (Cozy Bear) CTI Analysis & Advanced TTP Mapping (Week 10)
+- Analyzed CTI vendor reports (Mandiant, CrowdStrike) covering state-sponsored APT29 operations.
+- Mapped APT29 attack vectors to MITRE ATT&CK, including Supply Chain Compromise (`T1195.002`), OAuth Credential Modification (`T1098.005`), and Cloud Exfiltration (`T1567.002`).
+- Formulated identity-centric (Entra ID) and endpoint-centric (Sysmon/EDR) telemetry collection strategies.
+- Defined Enterprise defense recommendations focused on Zero Trust Architecture and Credential Guard deployment.
+
+---
+
+## Data Normalization Pipeline
+To handle messy open-source intelligence feeds, a custom python parser (`week3/process_data.py`) standardizes the dataset:
+- **Regex Validation:** Validates SHA256/MD5 hashes and IPv4 structures.
+- **Sanitization:** Converts domains to lowercase, strips whitespaces, and removes defanged strings (`hxxp`, `[.]`).
+- **MISP Taxonomies:** Assigns operational categories (Payload delivery, Network activity) with `to_ids=True`.
+
+---
+
+## AI Usage & Declaration
+Artificial Intelligence tools like Gemini adn Claude were utilized as technical accelerators and analytical collaborators throughout this project:
+- **Detection Engineering & Logic Tuning:** AI was leveraged to assist in structuring Sigma rule definitions, refining Kibana Query Language (KQL) expressions, and normalizing Sysmon telemetry mappings.
+- **Code Optimization & Data Pipelines:** Assisted in drafting regex parameters for the Python data normalization parser (`process_data.py`) and debugging automated ingestion scripts.
+- **Documentation & Formatting:** Used for formatting Markdown reports, aligning ATT&CK matrices, and refining English technical documentation across all project phases.
+- **Threat Research Partnering:** Employed as a reasoning aid to synthesize vendor CTI reports (Mandiant, CrowdStrike) and map adversary tactics to MITRE ATT&CK standards.
