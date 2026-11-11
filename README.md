@@ -83,6 +83,17 @@ To handle messy open-source intelligence feeds, a custom python parser (`week3/p
 - **MISP Taxonomies:** Assigns operational categories (Payload delivery, Network activity) with `to_ids=True`.
 
 ---
+### Lab Environment Specifications (WS-04)
+
+| Parameter | Value |
+| :--- | :--- |
+| **Hostname** | `WS-04` |
+| **OS Name** | Windows 10 Home Single Language |
+| **Version** | 2009 |
+| **OS Build** | 26200 |
+| **Security Monitoring** | Sysmon (System Monitor) & ELK Stack (Kibana) |
+
+---
 
 ## AI Usage & Declaration
 Artificial Intelligence tools like Gemini adn Claude were utilized as technical accelerators and analytical collaborators throughout this project:
