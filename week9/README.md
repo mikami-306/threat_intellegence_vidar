@@ -46,10 +46,11 @@ We executed an atomic test designed to mimic malicious PowerShell invocation fla
 We executed an atomic test designed to simulate process access and credential extraction logic (e.g., LSASS memory dump / SAM access):
 
 ```powershell
-Invoke-AtomicTest T1003 -TestNumbers 1
+Invoke-AtomicTest T1003 -TestNumbers 
 ```
-![alt text](image-2.png)
-> **Findings:** The execution completed with an exit code indicating missing execution dependencies (`Gsecdump` binary not present on target), while still triggering process invocation telemetry.
+<img width="1097" height="135" alt="image" src="https://github.com/user-attachments/assets/1e035d39-1f62-4ff3-9b6f-78ec3e7efb95" />
+
+> **Findings:** The test executed successfully (Exit code: 0), initiating process access and handle manipulation routines against system components.
 
 ---
 
@@ -76,9 +77,10 @@ event.code: "1" and host.name: "WS-04" and process.name: "powershell.exe"
 event.code: "10" and host.name: "WS-04" and target_process.name: "lsass.exe"
 ```
 
-> **Analysis:** Analyzed process access events to verify whether target process interactions with credential handles were caught by Sysmon. Host-level telemetry verified process creation and invocation attempts associated with credential dumping techniques on **WS-04**.
+> **Analysis:**Kibana with event.code: "10" and host.name: "WS-04"  returned no results. This indicates a telemetry gap on the endpoint, where process access events involving the Local Security Authority Subsystem Service (lsass.exe) are filtered out or unmonitored by the active Sysmon configuration..
 
-![alt text](image-4.png)
+<img width="1917" height="1022" alt="image" src="https://github.com/user-attachments/assets/70f24be2-2098-490a-b48d-8ec88211d16a" />
+
 
 
 ---
@@ -88,7 +90,7 @@ event.code: "10" and host.name: "WS-04" and target_process.name: "lsass.exe"
 | Technique ID | Technique Name | Executed on WS-04 | Sysmon EID Logged | Telemetry Ingested in Kibana | Status / Findings |
 |---|---|---|---|---|---|
 | **T1059.001** | PowerShell Execution | Yes | EID 1 (Process Create) | Yes | **Verified** — Full visibility of execution flags and process command line. |
-| **T1003** | Credential Dumping | Yes | EID 10 / EID 1 | Partial / Dependent | **Verified** — Process access attempt generated host-level telemetry; SIEM rules validated. |
+| **T1003** | Credential Dumping | Yes | None (EID 10) | No | **Telemetry Gap** — Test T1003-3 completed (Exit code: 0), but lsass.exe access events were not ingested into Kibana due to endpoint filtering rules. |
 
 ---
 
@@ -104,11 +106,4 @@ Invoke-AtomicTest T1003 -Cleanup
 
 > **Status:** All temporary files, test scripts, and execution artifacts were successfully cleared from the system.
 
----
 
-## Key Takeaways
-
-- **Sysmon EID 1** provides full process creation visibility for PowerShell-based execution.
-- **Sysmon EID 10** captures LSASS process access attempts, enabling credential dumping detection.
-- **Detection dependencies** (e.g., `Gsecdump` binary) affect test fidelity — ensure payload dependencies are staged for complete execution.
-- **Cleanup automation** via `Invoke-AtomicTest -Cleanup` successfully restores the environment.
